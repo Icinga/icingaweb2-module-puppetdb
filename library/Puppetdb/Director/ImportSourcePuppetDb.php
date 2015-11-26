@@ -14,6 +14,7 @@ class ImportSourcePuppetDb extends ImportSourceHook
 
     public function fetchData()
     {
+        $result = array();
         $db    = $this->db();
         Benchmark::measure('Pdb, going to fetch classes');
         $data  = $db->classes();
@@ -21,9 +22,14 @@ class ImportSourcePuppetDb extends ImportSourceHook
         $facts = $db->fetchFacts();
         Benchmark::measure('Pdb, got facts, preparing result');
 
-        foreach ($data as $host => $classes) {
+        foreach ($facts as $host => $f) {
 
             $f = $facts[$host];
+            if (array_key_exists($host, $data)) {
+                $classes = $data[$host];
+            } else {
+                $classes = array();
+            }
             foreach (array_keys((array) $f) as $key) {
                 if (preg_match('/(?:memoryfree|swapfree|uptime)/', $key)) {
                     unset($f->$key);
