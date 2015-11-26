@@ -117,7 +117,7 @@ class PuppetDbApi
     protected function request($method, $url, $body = null, $raw = false)
     {
         $headers = array(
-            'Host: ' . $this->pdbHost,
+            'Host: ' . $this->pdbHost . ':8081',
             'Connection: close'
         );
         if ($body !== null) {
