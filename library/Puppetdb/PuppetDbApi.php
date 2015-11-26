@@ -58,23 +58,47 @@ class PuppetDbApi
         return json_decode($this->get('fact-names'));
     }
 
+    protected function encodeParameter($key, $value)
+    {
+        return $key . '=' . rawurlencode(json_encode($value));
+    } 
+
     public function classes()
     {
         $classes = array();
-        foreach (json_decode($this->get('resources/Class')) as $entry) {
-            if (! array_key_exists($entry->certname, $classes)) {
-                $classes[$entry->certname] = array();
+        $order = array(
+            array('field' => 'certname', 'order' => 'asc'),
+            array('field' => 'title',    'order' => 'asc')
+        );
+
+        $remaining = true;
+        $step      = 3000;
+        $offset    = 0;
+        $cnt       = 0;
+
+        $url = 'resources?'
+             . $this->encodeParameter('query', array('=', 'type', 'Class'))
+             . '&' . $this->encodeParameter('order-by', $order)
+             . '&limit=' . ($step + 1) . '&offset='
+             ;
+
+        while ($remaining) {
+            $remaining = false;
+            foreach (json_decode($this->get($url . $offset)) as $entry) {
+                $cnt++;
+                if ($cnt > $step) {
+                    $cnt = 0;
+                    $offset += $step;
+                    $remaining = true;
+                    break;
+                }
+                if (! array_key_exists($entry->certname, $classes)) {
+                    $classes[$entry->certname] = array();
+                }
+
+                $classes[$entry->certname][] = $entry->title;
             }
-
-            $classes[$entry->certname][] = $entry->title;
         }
-
-        foreach ($classes as $k => & $c) {
-            natcasesort($c);
-            $classes[$k] = array_values($c);
-        }
-
-        ksort($classes);
 
         return $classes;
     }
