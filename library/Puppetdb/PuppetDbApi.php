@@ -165,7 +165,7 @@ class PuppetDbApi
                 'cafile'           => $this->ssldir('certs/ca.pem'),
                 'verify_depth'     => 5,
                 'verify_expiry'    => true,
-                'CN_match'         => $this->pdbHost, // != peer?,
+                // TODO: re-enable once configurable: 'CN_match'         => $this->pdbHost, // != peer?,
                 'local_cert'       => $this->ssldir('private_keys/' . $this->certname . '_combined.pem'),
             )
         );
