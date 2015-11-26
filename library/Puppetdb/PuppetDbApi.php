@@ -105,6 +105,8 @@ class PuppetDbApi
 
     public function fetchFacts(Filter $filter = null)
     {
+        $unStringify = true;
+
         if ($filter === null) {
             $facts = $this->get('facts');
         } else {
@@ -117,7 +119,20 @@ class PuppetDbApi
                 $result[$row->certname] = (object) array();
             }
             // What to do with row->environment on newer versions?
-            $result[$row->certname]->{$row->name} = $row->value;
+            if ($unStringify && is_string($row->value)) {
+                $first = substr($row->value, 0, 1);
+                $last  = substr($row->value, -1);
+                if (($first === '{' && $last === '}')
+                    || ($first === '[' && $last === ']')
+                    || ($first === '"' && $last === '"')
+                ) {
+                    $result[$row->certname]->{$row->name} = json_decode($row->value);
+                } else {
+                    $result[$row->certname]->{$row->name} = $row->value;
+                }
+            } else {
+                $result[$row->certname]->{$row->name} = $row->value;
+            }
         }
 
         ksort($result);
