@@ -29,12 +29,19 @@ class PuppetDbApi
 
     protected $certname;
 
+    protected $orderBy;
+
     public function __construct($version, $certname, $host, $port = 8081)
     {
         $this->setVersion($version);
         $this->pdbHost  = $host;
         $this->pdbPort  = $port;
         $this->certname = $certname;
+        if ($version === 'v4') {
+            $this->orderBy = 'order_by';
+        } else {
+            $this->orderBy = 'order-by';
+        }
     }
 
     public function setVersion($version)
@@ -78,7 +85,7 @@ class PuppetDbApi
 
         $url = 'resources?'
              . $this->encodeParameter('query', array('=', 'type', 'Class'))
-             . '&' . $this->encodeParameter('order-by', $order)
+             . '&' . $this->encodeParameter($this->orderBy, $order)
              . '&limit=' . ($step + 1) . '&offset='
              ;
 
