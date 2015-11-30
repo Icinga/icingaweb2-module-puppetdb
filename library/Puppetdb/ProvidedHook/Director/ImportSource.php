@@ -1,6 +1,6 @@
 <?php
 
-namespace Icinga\Module\Puppetdb\Director;
+namespace Icinga\Module\Puppetdb\ProvidedHook\Director;
 
 use Icinga\Module\Director\Web\Form\QuickForm;
 use Icinga\Module\Director\Web\Hook\ImportSourceHook;
@@ -8,7 +8,7 @@ use Icinga\Module\Puppetdb\PuppetDbApi;
 use Icinga\Module\Puppetdb\PuppetDb;
 use Icinga\Application\Benchmark;
 
-class ImportSourcePuppetDb extends ImportSourceHook
+class ImportSource extends ImportSourceHook
 {
     protected $db;
 
@@ -61,6 +61,11 @@ class ImportSourcePuppetDb extends ImportSourceHook
         }
 
         return $columns;
+    }
+
+    public static function getDefaultKeyColumnName()
+    {
+        return 'certname';
     }
 
     public static function addSettingsFormFields(QuickForm $form)
