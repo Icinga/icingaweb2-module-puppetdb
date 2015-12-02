@@ -14,6 +14,10 @@ class ImportSource extends ImportSourceHook
 
     public function fetchData()
     {
+        if ($this->getSetting('query_type') === 'resource') {
+            return $this->fetchResourceData();
+        }
+
         $result = array();
         $db    = $this->db();
         Benchmark::measure('Pdb, going to fetch classes');
@@ -50,6 +54,17 @@ class ImportSource extends ImportSourceHook
 
     public function listColumns()
     {
+        if ($this->getSetting('query_type') === 'resource') {
+            return array(
+                'certname',
+                'type',
+                'title',
+                'exported',
+                'parameters',
+                'environment',
+            );
+        }
+
         $columns = array(
             'certname',
             'classes',
@@ -61,6 +76,11 @@ class ImportSource extends ImportSourceHook
         }
 
         return $columns;
+    }
+
+    protected function fetchResourceData()
+    {
+        return $this->db()->fetchResourcesByType($this->getSetting('resource_type'));
     }
 
     public static function getDefaultKeyColumnName()
@@ -144,9 +164,9 @@ class ImportSource extends ImportSourceHook
     {
         if ($this->db === null) {
             $this->db = new PuppetDbApi(
-                $this->settings['api_version'],
-                $this->settings['client_cert'],
-                $this->settings['server']
+                $this->getSetting('api_version'),
+                $this->getSetting('client_cert'),
+                $this->getSetting('server')
             );
         }
 
