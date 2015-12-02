@@ -65,6 +65,20 @@ class PuppetDbApi
         return json_decode($this->get('fact-names'));
     }
 
+    protected function query($query = null)
+    {
+        if ($query === null) {
+            return '';
+        } else {
+            return $this->encodeParameter('query', $query);;
+        }
+    }
+
+    protected function orderBy($order)
+    {
+        return $this->encodeParameter($this->orderBy, $order);
+    }
+
     protected function encodeParameter($key, $value)
     {
         return $key . '=' . rawurlencode(json_encode($value));
