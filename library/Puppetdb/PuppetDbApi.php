@@ -123,16 +123,30 @@ class PuppetDbApi
             array('field' => 'title',    'order' => 'asc')
         );
 
+        $url = 'resources?'
+             . $this->encodeParameter('query', array('=', 'type', 'Class'))
+             . '&' . $this->encodeParameter($this->orderBy, $order)
+             ;
+
+        foreach ($this->fetchLimited($url) as $entry) {
+            if (! array_key_exists($entry->certname, $classes)) {
+                $classes[$entry->certname] = array();
+            }
+
+            $classes[$entry->certname][] = $entry->title;
+        }
+
+        return $classes;
+    }
+
+    protected function fetchLimited($url)
+    {
         $remaining = true;
         $step      = 3000;
         $offset    = 0;
         $cnt       = 0;
-
-        $url = 'resources?'
-             . $this->encodeParameter('query', array('=', 'type', 'Class'))
-             . '&' . $this->encodeParameter($this->orderBy, $order)
-             . '&limit=' . ($step + 1) . '&offset='
-             ;
+        $result = array();
+        $url .= '&limit=' . ($step + 1) . '&offset=';
 
         while ($remaining) {
             $remaining = false;
@@ -144,15 +158,12 @@ class PuppetDbApi
                     $remaining = true;
                     break;
                 }
-                if (! array_key_exists($entry->certname, $classes)) {
-                    $classes[$entry->certname] = array();
-                }
 
-                $classes[$entry->certname][] = $entry->title;
+                $result[] = $entry;
             }
         }
 
-        return $classes;
+        return $result;
     }
 
     public function fetchFacts(Filter $filter = null)
