@@ -166,6 +166,61 @@ class PuppetDbApi
         return $result;
     }
 
+    public function fetchResources(Filter $filter = null, $exported = null)
+    {
+        if ($filter === null || $filter->isEmpty()) {
+            $query = null;
+        } else {
+            $query = FilterRenderer::forFilter($filter)->toArray();
+        }
+
+        if ($exported !== null) {
+            if ($query === null) {
+                $query = array('=', 'exported', $exported);
+            } else {
+                $query = array(
+                    'and',
+                    array('=', 'exported', $exported),
+                    $query
+                );
+            }
+        }
+
+        $url = 'resources';
+        $columns = array(
+            'certname',
+            'type',
+            'title',
+            'exported',
+            'parameters',
+            'environment',
+            // 'tags' -> on demand?
+        );
+        if ($query !== null) {
+            $query = array('extract', $columns, $query);
+            $url .= '?' . $this->encodeParameter('query', $query);
+        }
+
+        return $this->fetchLimited($url);
+    }
+
+    public function fetchResourcesByType($type, Filter $filter = null)
+    {
+        if (substr($type, 0, 2) === '@@') {
+            $exported = true;
+            $type = substr($type, 2);
+        } else {
+            $exported = false;
+        }
+        if ($filter === null) {
+            $filter = Filter::fromQueryString('type=' . $type);
+        } else {
+            $filter->andFilter(Filter::fromQueryString('type=' . $type));
+        }
+
+        return $this->fetchResources($filter, true);
+    }
+
     public function fetchFacts(Filter $filter = null)
     {
         $unStringify = true;
@@ -248,7 +303,6 @@ class PuppetDbApi
             )
         );
         $context = stream_context_create($opts);
-
         $res = file_get_contents($this->url($url), false, $context);
         if (substr(array_shift($http_response_header), 0, 10) !== 'HTTP/1.1 2') {
             throw new IcingaException(
