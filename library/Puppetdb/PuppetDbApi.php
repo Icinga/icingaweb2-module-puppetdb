@@ -65,6 +65,37 @@ class PuppetDbApi
         return json_decode($this->get('fact-names'));
     }
 
+    public function enumResourceTypes($exported = false)
+    {
+        if ($this->version !== 'v4') {
+            return array();
+        }
+
+        $order = array(
+            array('field' => 'exported', 'order' => 'desc'),
+            array('field' => 'type', 'order' => 'asc')
+        );
+
+        $url = 'resources?' . $this->query(array(
+            'extract',
+            array(array('function', 'count'), 'type', 'exported'),
+            array('~', 'type', '.'),
+            array('group_by', 'type', 'exported')
+        )) . '&' . $this->orderBy($order);
+
+        $enum = array();
+        foreach (json_decode($this->get($url)) as $res) {
+            if ($res->exported) {
+                $name = '@@' . $res->type;
+            } else {
+                $name = $res->type;
+            }
+            $enum[$name] = sprintf('%s (%d)', $name, $res->count);
+        }
+
+        return $enum;
+    }
+
     protected function query($query = null)
     {
         if ($query === null) {
