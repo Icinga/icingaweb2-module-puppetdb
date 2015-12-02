@@ -89,16 +89,55 @@ class ImportSource extends ImportSourceHook
             'class'        => 'autosubmit',
         ));
 
-        if ($server = $form->getSentValue('server', $form->getValue('server'))) {
-
-            $form->addElement('select', 'client_cert', array(
-                'label'        => 'Client Certificate',
-                'required'     => true,
-                'multiOptions' => $form->optionalEnum($pdb->listClientCerts($server)),
-            ));
-
+        if (! ($server = $form->getSentOrObjectValue('server'))) {
+            return $form;
         }
-        return $form;
+
+        $form->addElement('select', 'client_cert', array(
+            'label'        => 'Client Certificate',
+            'required'     => true,
+            'class'        => 'autosubmit',
+            'multiOptions' => $form->optionalEnum($pdb->listClientCerts($server)),
+        ));
+
+        if (! ($cert = $form->getSentOrObjectValue('client_cert'))) {
+            return;
+        }
+
+        $form->addElement('select', 'query_type', array(
+            'label'        => 'Query type',
+            'required'     => true,
+            'class'        => 'autosubmit',
+            'multiOptions' => $form->optionalEnum(array(
+                'resource' => $form->translate('Resources'),
+                'node'     => $form->translate('Nodes'),
+            )),
+        ));
+
+        if (! ($queryType = $form->getSentOrObjectValue('query_type'))) {
+            return;
+        }
+
+        $db = new PuppetDbApi(
+            $form->getSentOrObjectValue('api_version'),
+            $cert,
+            $server
+        );
+
+        $resourceTypes = $db->enumResourceTypes();
+        if (empty($resourceTypes)) {
+            $form->addElement('text', 'resource_type', array(
+                'label'        => 'Resource type',
+                'required'     => true,
+            ));
+        } else {
+            $form->addElement('select', 'resource_type', array(
+                'label'        => 'Resource type',
+                'required'     => true,
+                'class'        => 'autosubmit',
+                'multiOptions' => $form->optionalEnum($resourceTypes)
+            ));
+        }
     }
 
     protected function db()
