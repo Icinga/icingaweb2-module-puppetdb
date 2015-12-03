@@ -197,7 +197,9 @@ class PuppetDbApi
             // 'tags' -> on demand?
         );
         if ($query !== null) {
-            $query = array('extract', $columns, $query);
+            if ($this->version === 'v4') {
+                $query = array('extract', $columns, $query);
+            }
             $url .= '?' . $this->encodeParameter('query', $query);
         }
 
