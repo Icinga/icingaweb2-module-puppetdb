@@ -109,7 +109,7 @@ class ImportSource extends ImportSourceHook
             'class'        => 'autosubmit',
         ));
 
-        if (! ($server = $form->getSentOrObjectValue('server'))) {
+        if (! ($server = $form->getSentOrObjectSetting('server'))) {
             return $form;
         }
 
@@ -120,7 +120,7 @@ class ImportSource extends ImportSourceHook
             'multiOptions' => $form->optionalEnum($pdb->listClientCerts($server)),
         ));
 
-        if (! ($cert = $form->getSentOrObjectValue('client_cert'))) {
+        if (! ($cert = $form->getSentOrObjectSetting('client_cert'))) {
             return;
         }
 
@@ -134,12 +134,12 @@ class ImportSource extends ImportSourceHook
             )),
         ));
 
-        if (! ($queryType = $form->getSentOrObjectValue('query_type'))) {
+        if (! ($queryType = $form->getSentOrObjectSetting('query_type'))) {
             return;
         }
 
         $db = new PuppetDbApi(
-            $form->getSentOrObjectValue('api_version'),
+            $form->getSentOrObjectSetting('api_version'),
             $cert,
             $server
         );
