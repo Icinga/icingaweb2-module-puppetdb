@@ -2,8 +2,8 @@
 
 namespace Icinga\Module\Puppetdb\ProvidedHook\Director;
 
+use Icinga\Module\Director\Hook\ImportSourceHook;
 use Icinga\Module\Director\Web\Form\QuickForm;
-use Icinga\Module\Director\Web\Hook\ImportSourceHook;
 use Icinga\Module\Puppetdb\PuppetDbApi;
 use Icinga\Module\Puppetdb\PuppetDb;
 use Icinga\Application\Benchmark;
