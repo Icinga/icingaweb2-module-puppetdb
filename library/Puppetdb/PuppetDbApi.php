@@ -146,7 +146,7 @@ class PuppetDbApi
         $offset    = 0;
         $cnt       = 0;
         $result = array();
-        $url .= '&limit=' . ($step + 1) . '&offset=';
+        $url .= '&limit=' . $step . '&offset=';
 
         while ($remaining) {
             $remaining = false;
