@@ -215,7 +215,7 @@ class PuppetDbApi
             );
         }
 
-        $url .= '&' . $this->orderBy($order)
+        $url .= '&' . $this->orderBy($order);
 
         return $this->fetchLimited($url);
     }
