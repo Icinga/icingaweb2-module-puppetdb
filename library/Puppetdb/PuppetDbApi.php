@@ -217,10 +217,10 @@ class PuppetDbApi
         if ($filter === null) {
             $filter = Filter::fromQueryString('type=' . $type);
         } else {
-            $filter->andFilter(Filter::fromQueryString('type=' . $type));
+            $filter = $filter->andFilter(Filter::fromQueryString('type=' . $type));
         }
 
-        return $this->fetchResources($filter, true);
+        return $this->fetchResources($filter, $exported);
     }
 
     public function fetchFacts(Filter $filter = null)
