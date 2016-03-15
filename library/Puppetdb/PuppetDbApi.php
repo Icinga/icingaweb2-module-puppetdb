@@ -203,6 +203,20 @@ class PuppetDbApi
             $url .= '?' . $this->encodeParameter('query', $query);
         }
 
+        $order = array(
+            array('field' => 'type', 'order' => 'asc'),
+            array('field' => 'title', 'order' => 'asc')
+        );
+
+        if ($exported === null) {
+            array_unshift(
+                $order,
+                array('field' => 'exported', 'order' => 'desc')
+            );
+        }
+
+        $url .= '&' . $this->orderBy($order)
+
         return $this->fetchLimited($url);
     }
 
