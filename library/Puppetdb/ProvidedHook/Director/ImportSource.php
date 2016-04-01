@@ -95,10 +95,10 @@ class ImportSource extends ImportSourceHook
             'label'        => 'API version',
             'required'     => true,
             'multiOptions' => array(
-                'v4' => 'v4',
-                'v3' => 'v3',
-                'v2' => 'v2',
-                'v1' => 'v1',
+                'v4' => 'v4: PuppetDB 2.3, 3.0, 3.1, 3.2, 4.0 (PE 3.8, 2015.2, 2015.3)',
+                'v3' => 'v3: PuppetDB 1.5, 1.6 (PE 3.1, 3.2, 3.3)',
+                'v2' => 'v2: PuppetDB 1.1, 1.2, 1.3, 1.4',
+                'v1' => 'v1: PuppetDB 1.0',
             ),
         ));
 
