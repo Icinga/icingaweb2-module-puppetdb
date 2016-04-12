@@ -1,5 +1,7 @@
 <?php
 
+use Icinga\Application\Icinga;
+
 $this->provideHook('director/ImportSource');
 
 // Workaround for doc images:
