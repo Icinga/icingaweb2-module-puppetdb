@@ -7,6 +7,7 @@ use Icinga\Module\Director\Web\Form\QuickForm;
 use Icinga\Module\Puppetdb\PuppetDbApi;
 use Icinga\Module\Puppetdb\PuppetDb;
 use Icinga\Application\Benchmark;
+use Exception;
 
 class ImportSource extends ImportSourceHook
 {
@@ -138,13 +139,23 @@ class ImportSource extends ImportSourceHook
             return;
         }
 
-        $db = new PuppetDbApi(
-            $form->getSentOrObjectSetting('api_version'),
-            $cert,
-            $server
-        );
+        try  {
+            $db = new PuppetDbApi(
+                $form->getSentOrObjectSetting('api_version'),
+                $cert,
+                $server
+            );
 
-        $resourceTypes = $db->enumResourceTypes();
+            $resourceTypes = $db->enumResourceTypes();
+        } catch (Exception $e) {
+            $form->addError(
+                sprintf(
+                    $form->translate('Failed to load resource types: %s'),
+                    $e->getMessage()
+                )
+            );
+        }
+
         if (empty($resourceTypes)) {
             $form->addElement('text', 'resource_type', array(
                 'label'        => 'Resource type',
