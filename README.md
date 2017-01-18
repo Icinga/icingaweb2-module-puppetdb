@@ -6,6 +6,7 @@ for Icinga Director. As of this writing it has not even a GUI or CLI
 component, but this may change in future.
 
 To install, please refer to our documentation. [Installation and configuration](doc/01-Installation.md)
+
 Note: Some steps require you to be familiar with Puppet/PuppetDB. 
 
 
