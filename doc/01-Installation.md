@@ -41,9 +41,9 @@ work:
 PUPPETDB_HOST=puppetdb.example.com
 MY_CERTNAME=$(hostname --fqdn)
 WEB_SSLDIR=/etc/icingaweb2/modules/puppetdb/ssl
-mkdir $WEB_SSLDIR
+mkdir -p $WEB_SSLDIR
 cp -r $(puppet agent --configprint ssldir) $WEB_SSLDIR/$PUPPETDB_HOST
-cd $WEB_SSLDIR
+cd $WEB_SSLDIR/$PUPPETDB_HOST
 cat private_keys/${MY_CERTNAME}.pem certs/${MY_CERTNAME}.pem \
   > private_keys/${MY_CERTNAME}_combined.pem
 ```
