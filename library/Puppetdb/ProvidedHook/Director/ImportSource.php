@@ -9,10 +9,18 @@ use Icinga\Module\Puppetdb\PuppetDb;
 use Icinga\Application\Benchmark;
 use Exception;
 
+/**
+ * Class ImportSource
+ * @package Icinga\Module\Puppetdb\ProvidedHook\Director
+ */
 class ImportSource extends ImportSourceHook
 {
+    /** @var PuppetDbApi */
     protected $db;
 
+    /**
+     * @inheritdoc
+     */
     public function fetchData()
     {
         if ($this->getSetting('query_type') === 'resource') {
@@ -53,6 +61,9 @@ class ImportSource extends ImportSourceHook
         return $result;
     }
 
+    /**
+     * @inheritdoc
+     */
     public function listColumns()
     {
         if ($this->getSetting('query_type') === 'resource') {
@@ -79,18 +90,28 @@ class ImportSource extends ImportSourceHook
         return $columns;
     }
 
+    /**
+     * @return \stdClass[]
+     */
     protected function fetchResourceData()
     {
         return $this->db()->fetchResourcesByType($this->getSetting('resource_type'));
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function getDefaultKeyColumnName()
     {
         return 'certname';
     }
 
+    /**
+     * @inheritdoc
+     */
     public static function addSettingsFormFields(QuickForm $form)
     {
+        /** @var $form \Icinga\Module\Director\Forms\ImportSourceForm */
         $pdb = new PuppetDb();
         $form->addElement('select', 'api_version', array(
             'label'        => 'API version',
@@ -111,7 +132,7 @@ class ImportSource extends ImportSourceHook
         ));
 
         if (! ($server = $form->getSentOrObjectSetting('server'))) {
-            return $form;
+            return;
         }
 
         $form->addElement('select', 'client_cert', array(
@@ -139,7 +160,7 @@ class ImportSource extends ImportSourceHook
             return;
         }
 
-        try  {
+        try {
             $db = new PuppetDbApi(
                 $form->getSentOrObjectSetting('api_version'),
                 $cert,
@@ -169,8 +190,13 @@ class ImportSource extends ImportSourceHook
                 'multiOptions' => $form->optionalEnum($resourceTypes)
             ));
         }
+
+        return;
     }
 
+    /**
+     * @return PuppetDbApi
+     */
     protected function db()
     {
         if ($this->db === null) {

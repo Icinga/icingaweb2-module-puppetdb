@@ -5,36 +5,55 @@ namespace Icinga\Module\Puppetdb;
 use Icinga\Application\Config;
 use DirectoryIterator;
 
+/**
+ * Class PuppetDb
+ * @package Icinga\Module\Puppetdb
+ */
 class PuppetDb
 {
-    protected $ssldir;
+    /** @var string */
+    protected $sslDir;
 
-    protected $servers;
-
+    /**
+     * Return a list of available servers
+     *
+     * @return array
+     */
     public function listServers()
     {
         $servers = array();
 
-        foreach (new DirectoryIterator($this->ssldir()) as $file) {
-            if ($file->isDot()) continue;
+        foreach (new DirectoryIterator($this->sslDir()) as $file) {
+            if ($file->isDot()) {
+                continue;
+            }
             if ($file->isDir()) {
                 $servers[$file->getFilename()] = $file->getFilename();
             }
         }
         ksort($servers);
 
-        return $servers; 
+        return $servers;
     }
 
+    /**
+     * Return a list of available client certificates for a given server
+     * @param $serverName
+     * @return array
+     */
     public function listClientCerts($serverName)
     {
         $certs = array();
 
         foreach ($this->listServers() as $server) {
-            if ($server !== $serverName) continue;
+            if ($server !== $serverName) {
+                continue;
+            }
 
-            foreach (new DirectoryIterator($this->ssldir($server) . '/private_keys') as $file) {
-                if ($file->isDot()) continue;
+            foreach (new DirectoryIterator($this->sslDir($server) . '/private_keys') as $file) {
+                if ($file->isDot()) {
+                    continue;
+                }
                 $filename = $file->getFilename();
                 if (substr($filename, -13) === '_combined.pem') {
                     $certname = substr($filename, 0, -13);
@@ -48,15 +67,15 @@ class PuppetDb
         return $certs;
     }
 
-    public function ssldir($subdir = null)
+    public function sslDir($subdir = null)
     {
-        if ($this->ssldir === null) {
-            $this->ssldir = dirname(Config::module('puppetdb')->getConfigFile()) . '/ssl';
+        if ($this->sslDir === null) {
+            $this->sslDir = dirname(Config::module('puppetdb')->getConfigFile()) . '/ssl';
         }
         if ($subdir === null) {
-            return $this->ssldir;
+            return $this->sslDir;
         } else {
-            return $this->ssldir . '/' . $subdir;
+            return $this->sslDir . '/' . $subdir;
         }
     }
 }

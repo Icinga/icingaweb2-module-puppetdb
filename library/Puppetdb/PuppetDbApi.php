@@ -2,14 +2,17 @@
 
 namespace Icinga\Module\Puppetdb;
 
-use Icinga\Application\Config;
 use Icinga\Data\Filter\Filter;
 use Icinga\Exception\IcingaException;
 use Icinga\Exception\ProgrammingError;
-use Icinga\Module\Puppetdb\FilterRenderer;
 
+/**
+ * Class PuppetDbApi
+ * @package Icinga\Module\Puppetdb
+ */
 class PuppetDbApi
 {
+    /** @var array */
     protected static $baseUrls = array(
         'v1' => '',
         'v2' => '/v2',
@@ -17,20 +20,34 @@ class PuppetDbApi
         'v4' => '/pdb/query/v4'
     );
 
+    /** @var string */
     protected $version;
 
+    /** @var string */
     protected $baseUrl;
 
+    /** @var string */
     protected $pdbHost;
 
+    /** @var string|int */
     protected $pdbPort;
 
+    /** @var string */
     protected $configDir;
 
+    /** @var string */
     protected $certname;
 
+    /** @var string */
     protected $orderBy;
 
+    /**
+     * PuppetDbApi constructor.
+     * @param $version
+     * @param $certname
+     * @param $host
+     * @param int $port
+     */
     public function __construct($version, $certname, $host, $port = 8081)
     {
         $this->setVersion($version);
@@ -44,6 +61,11 @@ class PuppetDbApi
         }
     }
 
+    /**
+     * @param $version
+     * @return $this
+     * @throws ProgrammingError
+     */
     public function setVersion($version)
     {
         $this->version = $version;
@@ -55,6 +77,9 @@ class PuppetDbApi
         return $this;
     }
 
+    /**
+     * @return array
+     */
     public function listFactNames()
     {
         // Min version: v2
@@ -65,7 +90,10 @@ class PuppetDbApi
         return json_decode($this->get('fact-names'));
     }
 
-    public function enumResourceTypes($exported = false)
+    /**
+     * @return array
+     */
+    public function enumResourceTypes()
     {
         if ($this->version !== 'v4') {
             return array();
@@ -101,7 +129,7 @@ class PuppetDbApi
         if ($query === null) {
             return '';
         } else {
-            return $this->encodeParameter('query', $query);;
+            return $this->encodeParameter('query', $query);
         }
     }
 
@@ -113,8 +141,11 @@ class PuppetDbApi
     protected function encodeParameter($key, $value)
     {
         return $key . '=' . rawurlencode(json_encode($value));
-    } 
+    }
 
+    /**
+     * @return array
+     */
     public function classes()
     {
         $classes = array();
@@ -166,6 +197,11 @@ class PuppetDbApi
         return $result;
     }
 
+    /**
+     * @param  Filter $filter
+     * @param  bool $exported
+     * @return array
+     */
     public function fetchResources(Filter $filter = null, $exported = null)
     {
         if ($filter === null || $filter->isEmpty()) {
@@ -220,6 +256,11 @@ class PuppetDbApi
         return $this->fetchLimited($url);
     }
 
+    /**
+     * @param string $type
+     * @param Filter $filter
+     * @return array
+     */
     public function fetchResourcesByType($type, Filter $filter = null)
     {
         if (substr($type, 0, 2) === '@@') {
@@ -237,6 +278,10 @@ class PuppetDbApi
         return $this->fetchResources($filter, $exported);
     }
 
+    /**
+     * @param Filter $filter
+     * @return array
+     */
     public function fetchFacts(Filter $filter = null)
     {
         $unStringify = true;
@@ -273,10 +318,6 @@ class PuppetDbApi
         return $result;
     }
 
-    public function fetchHosts()
-    {
-    }
-
     protected function renderFilter(Filter $filter)
     {
         return FilterRenderer::forFilter($filter)->toQueryString();
@@ -311,11 +352,11 @@ class PuppetDbApi
                 'peer_name'        => $this->pdbHost,
                 'verify_peer'      => true,
                 'verify_peer_name' => true,
-                'cafile'           => $this->ssldir('certs/ca.pem'),
+                'cafile'           => $this->sslDir('certs/ca.pem'),
                 'verify_depth'     => 5,
                 'verify_expiry'    => true,
                 // TODO: re-enable once configurable: 'CN_match'         => $this->pdbHost, // != peer?,
-                'local_cert'       => $this->ssldir('private_keys/' . $this->certname . '_combined.pem'),
+                'local_cert'       => $this->sslDir('private_keys/' . $this->certname . '_combined.pem'),
             )
         );
         $context = stream_context_create($opts);
@@ -335,31 +376,54 @@ class PuppetDbApi
         }
     }
 
+    /**
+     * @param  string $url
+     * @param  string $body
+     * @return string
+     */
     public function get($url, $body = null)
     {
         return $this->request('get', $url, $body);
     }
 
+    /**
+     * @param  string $url
+     * @param  string $body
+     * @return string
+     */
     public function getRaw($url, $body = null)
     {
         return $this->request('get', $url, $body, true);
     }
 
+    /**
+     * @param  string $url
+     * @param  string $body
+     * @return string
+     */
     public function post($url, $body = null)
     {
         return $this->request('post', $url, $body);
     }
 
-    protected function ssldir($sub = null)
+    /**
+     * @param  string $sub
+     * @return string
+     */
+    protected function sslDir($sub = null)
     {
         return $this->getConfigDir($sub);
     }
 
+    /**
+     * @param  string $sub
+     * @return string
+     */
     protected function getConfigDir($sub = null)
     {
         if ($this->configDir === null) {
             $pdb = new PuppetDb();
-            $this->configDir = $pdb->ssldir($this->pdbHost);
+            $this->configDir = $pdb->sslDir($this->pdbHost);
         }
 
         return $this->configDir . ($sub === null ? '' :  '/' . $sub);
