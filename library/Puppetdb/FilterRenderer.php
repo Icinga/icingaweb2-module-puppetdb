@@ -39,7 +39,7 @@ class FilterRenderer
      */
     public static function forFilter(Filter $filter)
     {
-        return static($filter);
+        return new static($filter);
     }
 
     /**
