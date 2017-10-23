@@ -1,0 +1,5 @@
+Name: AWS
+Version: 1.0.0
+Depends: monitoring
+Description: PuppetDB module for Icinga Web 2
+ This module provides a PuppetDB import source for Icinga Director
