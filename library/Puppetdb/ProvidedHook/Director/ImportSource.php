@@ -108,6 +108,7 @@ class ImportSource extends ImportSourceHook
 
     /**
      * @inheritdoc
+     * @throws \Zend_Form_Exception
      */
     public static function addSettingsFormFields(QuickForm $form)
     {
