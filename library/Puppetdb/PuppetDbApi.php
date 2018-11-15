@@ -3,8 +3,8 @@
 namespace Icinga\Module\Puppetdb;
 
 use Icinga\Data\Filter\Filter;
-use Icinga\Exception\IcingaException;
-use Icinga\Exception\ProgrammingError;
+use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Class PuppetDbApi
@@ -64,16 +64,16 @@ class PuppetDbApi
     /**
      * @param $version
      * @return $this
-     * @throws ProgrammingError
      */
     public function setVersion($version)
     {
         $this->version = $version;
         if (! array_key_exists($version, self::$baseUrls)) {
-            throw new ProgrammingError('Got unknown PuppetDB API version: %s', $version);
+            throw new InvalidArgumentException('Got unknown PuppetDB API version: %s', $version);
         }
 
         $this->baseUrl = self::$baseUrls[$version];
+
         return $this;
     }
 
@@ -313,8 +313,8 @@ class PuppetDbApi
                 $result[$row->certname]->{$row->name} = $row->value;
             }
         }
-
         ksort($result);
+
         return $result;
     }
 
@@ -362,7 +362,7 @@ class PuppetDbApi
         $context = stream_context_create($opts);
         $res = file_get_contents($this->url($url), false, $context);
         if (substr(array_shift($http_response_header), 0, 10) !== 'HTTP/1.1 2') {
-            throw new IcingaException(
+            throw new RuntimeException(
                 'Headers: %s, Response: %s',
                 implode("\n", $http_response_header),
                 var_export($res, 1)
