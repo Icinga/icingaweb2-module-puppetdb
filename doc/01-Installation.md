@@ -75,7 +75,7 @@ file { $ssl_subdir:
 
 ~> exec { "Generate combined .pem file for $puppetdb_host":
   command     => "cat private_keys/${my_certname}.pem certs/${my_certname}.pem > private_keys/${my_certname}_combined.pem",
-  path        => ["/usr/bin", "/usr/sbin"],
+  path        => ["/usr/bin", "/bin"],
   cwd         => $ssl_subdir,
   refreshonly => true
 }
