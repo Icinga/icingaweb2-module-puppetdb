@@ -366,11 +366,11 @@ class PuppetDbApi
         $context = stream_context_create($opts);
         $res = file_get_contents($this->url($url), false, $context);
         if (substr(array_shift($http_response_header), 0, 10) !== 'HTTP/1.1 2') {
-            throw new RuntimeException(
+            throw new RuntimeException(\sprintf(
                 'Headers: %s, Response: %s',
                 implode("\n", $http_response_header),
                 var_export($res, 1)
-            );
+            ));
         }
         if ($raw) {
             return $res;
