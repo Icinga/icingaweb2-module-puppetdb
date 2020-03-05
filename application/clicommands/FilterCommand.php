@@ -4,9 +4,7 @@ namespace Icinga\Module\Puppetdb\Clicommands;
 
 use Icinga\Data\Filter\Filter;
 use Icinga\Cli\Command;
-use Icinga\Module\Puppetdb\FilterRenderer;
 use Icinga\Module\Puppetdb\PuppetDbApi;
-use Icinga\Module\Puppetdb\PuppetDb;
 
 class FilterCommand extends Command
 {

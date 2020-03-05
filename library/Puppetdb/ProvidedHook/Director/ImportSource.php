@@ -20,6 +20,7 @@ class ImportSource extends ImportSourceHook
 
     /**
      * @inheritdoc
+     * @throws \Icinga\Exception\QueryException
      */
     public function fetchData()
     {
@@ -27,7 +28,7 @@ class ImportSource extends ImportSourceHook
             return $this->fetchResourceData();
         }
 
-        $result = array();
+        $result = [];
         $db    = $this->db();
         Benchmark::measure('Pdb, going to fetch classes');
         $data  = $db->classes();
@@ -38,24 +39,23 @@ class ImportSource extends ImportSourceHook
         foreach ($facts as $host => $f) {
 
             $f = $facts[$host];
-            if (array_key_exists($host, $data)) {
+            if (\array_key_exists($host, $data)) {
                 $classes = $data[$host];
             } else {
-                $classes = array();
+                $classes = [];
             }
-            foreach (array_keys((array) $f) as $key) {
-                if (preg_match('/(?:memoryfree|swapfree|uptime)/', $key)) {
+            foreach (\array_keys((array) $f) as $key) {
+                if (\preg_match('/(?:memoryfree|swapfree|uptime)/', $key)) {
                     unset($f->$key);
                 }
             }
-            $result[] = (object) array(
+            $result[] = (object) [
                 'certname' => $host,
                 'classes'  => $classes,
                 'facts'    => $f,
-            );
+            ];
 
         }
-
         Benchmark::measure('Pdb result ready');
 
         return $result;
@@ -67,21 +67,21 @@ class ImportSource extends ImportSourceHook
     public function listColumns()
     {
         if ($this->getSetting('query_type') === 'resource') {
-            return array(
+            return [
                 'certname',
                 'type',
                 'title',
                 'exported',
                 'parameters',
                 'environment',
-            );
+            ];
         }
 
-        $columns = array(
+        $columns = [
             'certname',
             'classes',
             'facts'
-        );
+        ];
 
         foreach ($this->db()->listFactNames() as $name) {
             $columns[] = 'facts.' . $name;
@@ -92,6 +92,7 @@ class ImportSource extends ImportSourceHook
 
     /**
      * @return \stdClass[]
+     * @throws \Icinga\Exception\QueryException
      */
     protected function fetchResourceData()
     {
@@ -114,48 +115,48 @@ class ImportSource extends ImportSourceHook
     {
         /** @var $form \Icinga\Module\Director\Forms\ImportSourceForm */
         $pdb = new PuppetDb();
-        $form->addElement('select', 'api_version', array(
+        $form->addElement('select', 'api_version', [
             'label'        => 'API version',
             'required'     => true,
-            'multiOptions' => array(
+            'multiOptions' => [
                 'v4' => 'v4: PuppetDB 2.3 (experimental), 3.0, 3.1, 3.2, 4.0 (PE 3.8 (experimental), 2015.2, 2015.3)',
                 'v3' => 'v3: PuppetDB 1.5, 1.6, 2.3 (PE 3.1, 3.2, 3.3, 3.8)',
                 'v2' => 'v2: PuppetDB 1.1, 1.2, 1.3, 1.4',
                 'v1' => 'v1: PuppetDB 1.0',
-            ),
-        ));
+            ],
+        ]);
 
-        $form->addElement('select', 'server', array(
+        $form->addElement('select', 'server', [
             'label'        => 'PuppetDB Server',
             'required'     => true,
             'multiOptions' => $form->optionalEnum($pdb->listServers()),
             'class'        => 'autosubmit',
-        ));
+        ]);
 
         if (! ($server = $form->getSentOrObjectSetting('server'))) {
             return;
         }
 
-        $form->addElement('select', 'client_cert', array(
+        $form->addElement('select', 'client_cert', [
             'label'        => 'Client Certificate',
             'required'     => true,
             'class'        => 'autosubmit',
             'multiOptions' => $form->optionalEnum($pdb->listClientCerts($server)),
-        ));
+        ]);
 
         if (! ($cert = $form->getSentOrObjectSetting('client_cert'))) {
             return;
         }
 
-        $form->addElement('select', 'query_type', array(
+        $form->addElement('select', 'query_type', [
             'label'        => 'Query type',
             'required'     => true,
             'class'        => 'autosubmit',
-            'multiOptions' => $form->optionalEnum(array(
+            'multiOptions' => $form->optionalEnum([
                 'resource' => $form->translate('Resources'),
                 'node'     => $form->translate('Nodes'),
-            )),
-        ));
+            ]),
+        ]);
 
         if (! ($queryType = $form->getSentOrObjectSetting('query_type'))) {
             return;
@@ -171,7 +172,7 @@ class ImportSource extends ImportSourceHook
             $resourceTypes = $db->enumResourceTypes();
         } catch (Exception $e) {
             $form->addError(
-                sprintf(
+                \sprintf(
                     $form->translate('Failed to load resource types: %s'),
                     $e->getMessage()
                 )
@@ -179,17 +180,17 @@ class ImportSource extends ImportSourceHook
         }
 
         if (empty($resourceTypes)) {
-            $form->addElement('text', 'resource_type', array(
+            $form->addElement('text', 'resource_type', [
                 'label'        => 'Resource type',
                 'required'     => true,
-            ));
+            ]);
         } else {
-            $form->addElement('select', 'resource_type', array(
+            $form->addElement('select', 'resource_type', [
                 'label'        => 'Resource type',
                 'required'     => true,
                 'class'        => 'autosubmit',
                 'multiOptions' => $form->optionalEnum($resourceTypes)
-            ));
+            ]);
         }
 
         return;

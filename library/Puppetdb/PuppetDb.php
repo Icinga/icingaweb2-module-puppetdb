@@ -21,7 +21,7 @@ class PuppetDb
      */
     public function listServers()
     {
-        $servers = array();
+        $servers = [];
 
         foreach (new DirectoryIterator($this->sslDir()) as $file) {
             if ($file->isDot()) {
@@ -31,7 +31,7 @@ class PuppetDb
                 $servers[$file->getFilename()] = $file->getFilename();
             }
         }
-        ksort($servers);
+        \ksort($servers);
 
         return $servers;
     }
@@ -43,7 +43,7 @@ class PuppetDb
      */
     public function listClientCerts($serverName)
     {
-        $certs = array();
+        $certs = [];
 
         foreach ($this->listServers() as $server) {
             if ($server !== $serverName) {
@@ -55,27 +55,26 @@ class PuppetDb
                     continue;
                 }
                 $filename = $file->getFilename();
-                if (substr($filename, -13) === '_combined.pem') {
-                    $certname = substr($filename, 0, -13);
-                    $certs[$certname] = $certname;
+                if (\substr($filename, -13) === '_combined.pem') {
+                    $certName = \substr($filename, 0, -13);
+                    $certs[$certName] = $certName;
                 }
             }
         }
-
-        ksort($certs);
+        \ksort($certs);
 
         return $certs;
     }
 
-    public function sslDir($subdir = null)
+    public function sslDir($subDir = null)
     {
         if ($this->sslDir === null) {
-            $this->sslDir = dirname(Config::module('puppetdb')->getConfigFile()) . '/ssl';
+            $this->sslDir = \dirname(Config::module('puppetdb')->getConfigFile()) . '/ssl';
         }
-        if ($subdir === null) {
+        if ($subDir === null) {
             return $this->sslDir;
         } else {
-            return $this->sslDir . '/' . $subdir;
+            return $this->sslDir . '/' . $subDir;
         }
     }
 }

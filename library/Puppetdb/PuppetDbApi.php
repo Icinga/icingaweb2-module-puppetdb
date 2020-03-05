@@ -13,12 +13,12 @@ use RuntimeException;
 class PuppetDbApi
 {
     /** @var array */
-    protected static $baseUrls = array(
+    protected static $baseUrls = [
         'v1' => '',
         'v2' => '/v2',
         'v3' => '/v3',
         'v4' => '/pdb/query/v4'
-    );
+    ];
 
     /** @var string */
     protected $version;
@@ -68,7 +68,7 @@ class PuppetDbApi
     public function setVersion($version)
     {
         $this->version = $version;
-        if (! array_key_exists($version, self::$baseUrls)) {
+        if (! \array_key_exists($version, self::$baseUrls)) {
             throw new InvalidArgumentException('Got unknown PuppetDB API version: %s', $version);
         }
 
@@ -84,10 +84,10 @@ class PuppetDbApi
     {
         // Min version: v2
         if ($this->version === 'v1') {
-            return array();
+            return [];
         }
 
-        return json_decode($this->get('fact-names'));
+        return \json_decode($this->get('fact-names'));
     }
 
     /**
@@ -96,29 +96,29 @@ class PuppetDbApi
     public function enumResourceTypes()
     {
         if ($this->version !== 'v4') {
-            return array();
+            return [];
         }
 
-        $order = array(
-            array('field' => 'exported', 'order' => 'desc'),
-            array('field' => 'type', 'order' => 'asc')
-        );
+        $order = [
+            ['field' => 'exported', 'order' => 'desc'],
+            ['field' => 'type', 'order' => 'asc']
+        ];
 
-        $url = 'resources?' . $this->query(array(
+        $url = 'resources?' . $this->query([
             'extract',
-            array(array('function', 'count'), 'type', 'exported'),
-            array('~', 'type', '.'),
-            array('group_by', 'type', 'exported')
-        )) . '&' . $this->orderBy($order);
+            [['function', 'count'], 'type', 'exported'],
+            ['~', 'type', '.'],
+            ['group_by', 'type', 'exported']
+            ]) . '&' . $this->orderBy($order);
 
-        $enum = array();
+        $enum = [];
         foreach (json_decode($this->get($url)) as $res) {
             if ($res->exported) {
                 $name = '@@' . $res->type;
             } else {
                 $name = $res->type;
             }
-            $enum[$name] = sprintf('%s (%d)', $name, $res->count);
+            $enum[$name] = \sprintf('%s (%d)', $name, $res->count);
         }
 
         return $enum;
@@ -140,7 +140,7 @@ class PuppetDbApi
 
     protected function encodeParameter($key, $value)
     {
-        return $key . '=' . rawurlencode(json_encode($value));
+        return $key . '=' . \rawurlencode(json_encode($value));
     }
 
     /**
@@ -148,20 +148,20 @@ class PuppetDbApi
      */
     public function classes()
     {
-        $classes = array();
-        $order = array(
-            array('field' => 'certname', 'order' => 'asc'),
-            array('field' => 'title',    'order' => 'asc')
-        );
+        $classes = [];
+        $order = [
+            ['field' => 'certname', 'order' => 'asc'],
+            ['field' => 'title',    'order' => 'asc']
+        ];
 
         $url = 'resources?'
-             . $this->encodeParameter('query', array('=', 'type', 'Class'))
+             . $this->encodeParameter('query', ['=', 'type', 'Class'])
              . '&' . $this->encodeParameter($this->orderBy, $order)
              ;
 
         foreach ($this->fetchLimited($url) as $entry) {
-            if (! array_key_exists($entry->certname, $classes)) {
-                $classes[$entry->certname] = array();
+            if (! \array_key_exists($entry->certname, $classes)) {
+                $classes[$entry->certname] = [];
             }
 
             $classes[$entry->certname][] = $entry->title;
@@ -176,12 +176,12 @@ class PuppetDbApi
         $step      = 3000;
         $offset    = 0;
         $cnt       = 0;
-        $result = array();
+        $result = [];
         $url .= '&limit=' . ($step + 1) . '&offset=';
 
         while ($remaining) {
             $remaining = false;
-            foreach (json_decode($this->get($url . $offset)) as $entry) {
+            foreach (\json_decode($this->get($url . $offset)) as $entry) {
                 $cnt++;
                 if ($cnt > $step) {
                     $cnt = 0;
@@ -198,9 +198,10 @@ class PuppetDbApi
     }
 
     /**
-     * @param  Filter $filter
-     * @param  bool $exported
+     * @param Filter $filter
+     * @param bool $exported
      * @return array
+     * @throws \Icinga\Exception\QueryException
      */
     public function fetchResources(Filter $filter = null, $exported = null)
     {
@@ -212,18 +213,18 @@ class PuppetDbApi
 
         if ($exported !== null) {
             if ($query === null) {
-                $query = array('=', 'exported', $exported);
+                $query = ['=', 'exported', $exported];
             } else {
-                $query = array(
+                $query = [
                     'and',
-                    array('=', 'exported', $exported),
+                    ['=', 'exported', $exported],
                     $query
-                );
+                ];
             }
         }
 
         $url = 'resources';
-        $columns = array(
+        $columns = [
             'certname',
             'type',
             'title',
@@ -231,27 +232,27 @@ class PuppetDbApi
             'parameters',
             'environment',
             // 'tags' -> on demand?
-        );
+        ];
         if ($query !== null) {
             if ($this->version === 'v4') {
-                $query = array('extract', $columns, $query);
+                $query = ['extract', $columns, $query];
             }
             $url .= '?' . $this->encodeParameter('query', $query);
         }
 
-        if (in_array('type', $filter->listFilteredColumns())) {
-            $order = array(array('field' => 'title', 'order' => 'asc'));
+        if (\in_array('type', $filter->listFilteredColumns())) {
+            $order = [['field' => 'title', 'order' => 'asc']];
         } else {
-            $order = array(
-                array('field' => 'type', 'order' => 'asc'),
-                array('field' => 'title', 'order' => 'asc')
-            );
+            $order = [
+                ['field' => 'type', 'order' => 'asc'],
+                ['field' => 'title', 'order' => 'asc']
+            ];
         }
 
         if ($exported === null) {
-            array_unshift(
+            \array_unshift(
                 $order,
-                array('field' => 'exported', 'order' => 'desc')
+                ['field' => 'exported', 'order' => 'desc']
             );
         }
 
@@ -264,12 +265,13 @@ class PuppetDbApi
      * @param string $type
      * @param Filter $filter
      * @return array
+     * @throws \Icinga\Exception\QueryException
      */
     public function fetchResourcesByType($type, Filter $filter = null)
     {
-        if (substr($type, 0, 2) === '@@') {
+        if (\substr($type, 0, 2) === '@@') {
             $exported = true;
-            $type = substr($type, 2);
+            $type = \substr($type, 2);
         } else {
             $exported = false;
         }
@@ -285,6 +287,7 @@ class PuppetDbApi
     /**
      * @param Filter $filter
      * @return array
+     * @throws \Icinga\Exception\QueryException
      */
     public function fetchFacts(Filter $filter = null)
     {
@@ -296,20 +299,20 @@ class PuppetDbApi
             $facts = $this->get('facts?' . $this->renderFilter($filter));
         }
 
-        $result = array();
-        foreach (json_decode($facts) as $row) {
-            if (! array_key_exists($row->certname, $result)) {
-                $result[$row->certname] = (object) array();
+        $result = [];
+        foreach (\json_decode($facts) as $row) {
+            if (! \array_key_exists($row->certname, $result)) {
+                $result[$row->certname] = (object) [];
             }
             // What to do with row->environment on newer versions?
-            if ($unStringify && is_string($row->value)) {
-                $first = substr($row->value, 0, 1);
-                $last  = substr($row->value, -1);
+            if ($unStringify && \is_string($row->value)) {
+                $first = \substr($row->value, 0, 1);
+                $last  = \substr($row->value, -1);
                 if (($first === '{' && $last === '}')
                     || ($first === '[' && $last === ']')
                     || ($first === '"' && $last === '"')
                 ) {
-                    $result[$row->certname]->{$row->name} = json_decode($row->value);
+                    $result[$row->certname]->{$row->name} = \json_decode($row->value);
                 } else {
                     $result[$row->certname]->{$row->name} = $row->value;
                 }
@@ -317,11 +320,16 @@ class PuppetDbApi
                 $result[$row->certname]->{$row->name} = $row->value;
             }
         }
-        ksort($result);
+        \ksort($result);
 
         return $result;
     }
 
+    /**
+     * @param Filter $filter
+     * @return string
+     * @throws \Icinga\Exception\QueryException
+     */
     protected function renderFilter(Filter $filter)
     {
         return FilterRenderer::forFilter($filter)->toQueryString();
@@ -329,30 +337,30 @@ class PuppetDbApi
 
     protected function url($url)
     {
-        return sprintf('https://%s:%d%s/%s', $this->pdbHost, $this->pdbPort, $this->baseUrl, $url);
+        return \sprintf('https://%s:%d%s/%s', $this->pdbHost, $this->pdbPort, $this->baseUrl, $url);
     }
 
-    protected function request($method, $url, $body = null, $raw = false)
+    protected function prepareStreamContext($method, $body = null)
     {
-        $headers = array(
+        $headers = [
             'Host: ' . $this->pdbHost . ':8081',
             'Connection: close'
-        );
+        ];
         if ($body !== null) {
-            $body = json_encode($body);
+            $body = \json_encode($body);
             $headers[] = 'Content-Type: application/json';
         }
 
-        $opts = array(
-            'http' => array(
+        return [
+            'http' => [
                 'protocol_version' => '1.1',
                 'user_agent'       => 'Icinga Web 2.0 - Director',
-                'method'           => strtoupper($method),
+                'method'           => \strtoupper($method),
                 'content'          => $body,
                 'header'           => $headers,
                 'ignore_errors'    => true
-            ),
-            'ssl' => array(
+            ],
+            'ssl' => [
                 'peer_name'        => $this->pdbHost,
                 'verify_peer'      => true,
                 'verify_peer_name' => true,
@@ -361,15 +369,20 @@ class PuppetDbApi
                 'verify_expiry'    => true,
                 // TODO: re-enable once configurable: 'CN_match'         => $this->pdbHost, // != peer?,
                 'local_cert'       => $this->sslDir('private_keys/' . $this->certname . '_combined.pem'),
-            )
-        );
-        $context = stream_context_create($opts);
-        $res = file_get_contents($this->url($url), false, $context);
-        if (substr(array_shift($http_response_header), 0, 10) !== 'HTTP/1.1 2') {
+            ]
+        ];
+    }
+
+    protected function request($method, $url, $body = null, $raw = false)
+    {
+        $opts = $this->prepareStreamContext($method, $body);
+        $context = \stream_context_create($opts);
+        $res = \file_get_contents($this->url($url), false, $context);
+        if (\substr(\array_shift($http_response_header), 0, 10) !== 'HTTP/1.1 2') {
             throw new RuntimeException(\sprintf(
                 'Headers: %s, Response: %s',
-                implode("\n", $http_response_header),
-                var_export($res, 1)
+                \implode("\n", $http_response_header),
+                \var_export($res, 1)
             ));
         }
         if ($raw) {

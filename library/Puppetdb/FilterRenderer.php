@@ -44,20 +44,22 @@ class FilterRenderer
 
     /**
      * @return string
+     * @throws QueryException
      */
     public function toJson()
     {
-        return json_encode($this->toArray());
+        return \json_encode($this->toArray());
     }
 
     /**
      * Transform this filter to a PuppetDB query string
      *
      * @return string
+     * @throws QueryException
      */
     public function toQueryString()
     {
-        return 'query=' . rawurlencode($this->toJson());
+        return 'query=' . \rawurlencode($this->toJson());
         // return 'query=' . str_replace('%5B', '[', str_replace('%5D', ']', urlencode($this->toJson())));
     }
 
@@ -65,6 +67,7 @@ class FilterRenderer
      * Transform this filter to an Array structure
      *
      * @return array
+     * @throws QueryException
      */
     public function toArray()
     {
@@ -76,6 +79,7 @@ class FilterRenderer
      *
      * @param Filter $filter
      * @return array
+     * @throws QueryException
      */
     protected function filterToArray(Filter $filter)
     {
