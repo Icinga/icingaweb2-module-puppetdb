@@ -86,6 +86,7 @@ class BaseApi
         ];
         if ($body !== null) {
             $body = \json_encode($body);
+            $headers[] = 'Accept: application/json';
             $headers[] = 'Content-Type: application/json';
         }
 
