@@ -75,7 +75,20 @@ class BaseApi
 
     protected function url($url)
     {
-        return \sprintf('https://%s:%d%s/%s', $this->pdbHost, $this->pdbPort, $this->baseUrl, $url);
+        if (\substr($url, 0, 1) === '?') {
+            $slash = '';
+        } else {
+            $slash = '/';
+        }
+
+        return \sprintf(
+            'https://%s:%d%s%s%s',
+            $this->pdbHost,
+            $this->pdbPort,
+            $this->baseUrl,
+            $slash,
+            $url
+        );
     }
 
     protected function prepareStreamContext($method, $body = null)

@@ -13,7 +13,7 @@ class PuppetDbCommandsApi extends BaseApi
     public function deactivate($nodeName)
     {
         $urlNodeName = \rawurlencode($nodeName);
-        return $this->post("certname=$urlNodeName&command=deactivate_node&version=3", [
+        return $this->post("?certname=$urlNodeName&command=deactivate_node&version=3", [
             'certname' => $nodeName,
             'producer_timestamp' => \date('Y-m-d'),
         ]);
