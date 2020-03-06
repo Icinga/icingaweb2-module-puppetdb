@@ -8,8 +8,7 @@ use RuntimeException;
 class BaseApi
 {
     /** @var array */
-    protected static $baseUrls = [
-    ];
+    protected $baseUrls = [];
 
     /** @var string */
     protected $version;
@@ -51,8 +50,8 @@ class BaseApi
     public function setVersion($version)
     {
         $this->version = $version;
-        if (! \array_key_exists($version, self::$baseUrls)) {
-            throw new InvalidArgumentException('Got unknown PuppetDB API version: %s', $version);
+        if (! \array_key_exists($version, $this->baseUrls)) {
+            throw new InvalidArgumentException(\sprintf('Got unknown PuppetDB API version: %s', $version));
         }
 
         $this->baseUrl = self::$baseUrls[$version];

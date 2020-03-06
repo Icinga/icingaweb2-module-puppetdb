@@ -6,7 +6,7 @@ use Icinga\Data\Filter\Filter;
 
 class PuppetDbApi extends BaseApi
 {
-    protected static $baseUrls = [
+    protected $baseUrls = [
         'v1' => '',
         'v2' => '/v2',
         'v3' => '/v3',
