@@ -54,7 +54,7 @@ class BaseApi
             throw new InvalidArgumentException(\sprintf('Got unknown PuppetDB API version: %s', $version));
         }
 
-        $this->baseUrl = self::$baseUrls[$version];
+        $this->baseUrl = $this->baseUrls[$version];
 
         return $this;
     }
